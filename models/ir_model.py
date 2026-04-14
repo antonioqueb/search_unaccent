@@ -23,9 +23,9 @@ class BaseModel(models.AbstractModel):
     _inherit = "base"
 
     @api.model
-    def _search(self, domain, offset=0, limit=None, order=None):
+    def _search(self, domain, **kwargs):
         domain = _normalize_domain(domain)
-        return super()._search(domain, offset=offset, limit=limit, order=order)
+        return super()._search(domain, **kwargs)
 
 
 def _normalize_domain(domain):
