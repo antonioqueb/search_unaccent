@@ -24,7 +24,9 @@ class BaseModel(models.AbstractModel):
 
     @api.model
     def _search(self, domain, *args, **kwargs):
-        domain = _normalize_domain(domain)
+        # Solo normalizar listas planas de Python, no objetos Domain de Odoo 19
+        if isinstance(domain, list):
+            domain = _normalize_domain(domain)
         return super()._search(domain, *args, **kwargs)
 
 
@@ -33,10 +35,15 @@ def _normalize_domain(domain):
         return domain
     new_domain = []
     for leaf in domain:
-        if isinstance(leaf, (list, tuple)) and len(leaf) == 3:
+        if (
+            isinstance(leaf, (list, tuple))
+            and len(leaf) == 3
+            and isinstance(leaf[1], str)
+            and leaf[1] in _TEXT_OPERATORS
+            and isinstance(leaf[2], str)
+        ):
             field, operator, value = leaf
-            if operator in _TEXT_OPERATORS and isinstance(value, str):
-                value = _normalize_search_value(value)
+            value = _normalize_search_value(value)
             new_domain.append((field, operator, value))
         else:
             new_domain.append(leaf)
